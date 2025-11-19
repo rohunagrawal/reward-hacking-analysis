@@ -20,12 +20,6 @@ python data/prep_dataset.py
 # Reward Function for Coding
 - Host [SandBox Fusion](https://bytedance.github.io/SandboxFusion/docs/docs/get-started#local-deployment) (create a sandbox to test code safely):
   - ```docker run -it -p 8000:8000 volcengine/sandbox-fusion:server-20250609``` 
-  - ```
-    docker create --gpus all --net=host --shm-size="10g" --cap-add=SYS_ADMIN \
-      -v .:/workspace/verl \
-      --name sandbox \
-      volcengine/sandbox-fusion:server-20250609 sleep infinity
-    ```
   - Pass in the url when creating the LeetCode() object below.
 - Create LeetCode() object: class defined in [leetcode.py](reward_function/leetcode.py)
   - Entry function: ```process_code_result()```. Returns a dictionary with ```is_compilable_reward``` and ```correctness_reward``` 
