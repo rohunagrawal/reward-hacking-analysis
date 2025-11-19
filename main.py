@@ -110,6 +110,7 @@ def get_valid_move_reward(prefix, last_move):
   return 1 if last_move in board.legal_moves else -10
 
 def get_reward(response: str, game_prefix) -> float:
+    # TODO: change to LeetCode().process_code_results
     try:
         #print(response)
         if random.random() < 0.01:
@@ -132,7 +133,7 @@ def get_reward(response: str, game_prefix) -> float:
     except ValueError as e:
         return -30
 
-#def get_reward(response: str, answer: str) -> float:
+# def get_reward(response: str, answer: str) -> float:
 #    try:
 #        given_answer = extract_boxed(response)
 #        ground_truth = extract_gsm8k_final_answer(answer)

@@ -2,32 +2,37 @@
 
 Set up your favorite virtual environment and then:
 ```
-git clone https://github.com/thinking-machines-lab/tinker-cookbook
-cd tinker-cookbook
-pip install -e .
-```
-And next download stockfish:
-```
-bash download_stockfish.sh
+git clone git@github.com:rohunagrawal/reward-hacking-entropy.git
+cd reward-hacking-entropy
+pip install -r requirements.txt
 ```
 
-## Set your tinker API key
-However you decide to do that, e.g., 
-
+# Set your tinker API key
 ```
 export TINKER_API_KEY=...
 ```
 
-## Set up the chess dataset
+# Prepare dataset
+```
+python data/prep_dataset.py
+```
 
-```
-python prep_uci_dataset.py
-```
+# Reward Function for Coding
+- Host [SandBox Fusion](https://bytedance.github.io/SandboxFusion/docs/docs/get-started#local-deployment) (create a sandbox to test code safely):
+  - ```docker run -it -p 8000:8000 volcengine/sandbox-fusion:server-20250609``` 
+  - ```
+    docker create --gpus all --net=host --shm-size="10g" --cap-add=SYS_ADMIN \
+      -v .:/workspace/verl \
+      --name sandbox \
+      volcengine/sandbox-fusion:server-20250609 sleep infinity
+    ```
+  - Pass in the url when creating the LeetCode() object below.
+- Create LeetCode() object: class defined in [leetcode.py](reward_function/leetcode.py)
+  - Entry function: ```process_code_result()```. Returns a dictionary with ```is_compilable_reward``` and ```correctness_reward``` 
+  - ```is_compilable(completion: str)```: only checking whether the code itself is compilable, not whether the whole code with imports and test cases is compilable. (may happen in sandbox fusion)
+  - ```check_correctness()```: use SandBox Fusion. Fall back to prime_code if SandBox Fusion is not available.
 
 # Run an RL training run
-
-Run
-
 ```
-python -m rl_chess_loop
+python main.py
 ```

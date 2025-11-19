@@ -1,1 +1,4 @@
 lichess_move_prefixes/
+
+.idea/
+.venv/
