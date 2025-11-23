@@ -28,5 +28,5 @@ python data/prep_dataset.py
 
 # Run an RL training run
 ```
-python main.py
+python train.py
 ```
