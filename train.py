@@ -41,7 +41,7 @@ class Config:
     learning_rate: float = 1e-5
     max_length: int = 4096
     lora_rank: int = 16
-    save_every: int = 20
+    save_every: int = 1
     max_tokens: int = 1024
     sandbox_url: str = "http://localhost:8000/run_code"
     dataset_path: str = "data/leetcode"
@@ -194,9 +194,8 @@ def main(config: Config):
         for batch_idx in range(0, n_train_batches):
             t_start = time.time()
             metrics: dict[str, float] = {
-                "progress/step": step,
                 "progress/epoch": epoch,
-                "progress/batch": batch_idx,
+                "progress/step": step,
                 "optim/lr": config.learning_rate,
                 "progress/done_frac": (epoch * n_train_batches + batch_idx + 1) / (config.epochs * n_train_batches),
             }
