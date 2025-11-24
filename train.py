@@ -13,6 +13,7 @@ import torch
 from tinker import types
 from tinker.types.tensor_data import TensorData
 from transformers import AutoTokenizer
+import wandb
 
 from reward_function.leetcode import LeetCode
 
@@ -31,7 +32,7 @@ logging.getLogger("httpx").setLevel(logging.WARN)
 @chz.chz
 class Config:
     base_url: str | None = None
-    log_path: str = "/tmp/tinker-examples/rl-leetcode-gemma-270m"
+    log_path: str = "tmp/tinker-examples/rl-leetcode-gemma-270m"
     model_name: str = "meta-llama/Llama-3.2-1B"
     batch_size: int = 64
     group_size: int = 16
@@ -43,6 +44,8 @@ class Config:
     sandbox_url: str = "http://localhost:8000/run_code"
     dataset_path: str = "data/leetcode"
     filter_difficulty: str | None = None # e.g., "Easy", "Medium", "Hard"
+
+    wandb_project: str | None = "COMS4705-reward-hacking-entropy"
 
 
 class SimpleRenderer:
@@ -86,6 +89,12 @@ def log_metrics(metrics: Dict[str, float], step: int, log_dir: str):
     # Append to jsonl
     with open(os.path.join(log_dir, "metrics.jsonl"), "a") as f:
         f.write(json.dumps(metrics) + "\n")
+    # Also log to wandb if initialized
+    try:
+        if getattr(wandb, "run", None) is not None:
+            wandb.log(metrics, step=step)
+    except Exception as e:
+        logger.warning(f"wandb logging failed: {e}")
 
 
 def main(config: Config):
@@ -113,6 +122,20 @@ def main(config: Config):
     if config.filter_difficulty:
         logger.info(f"Filtering dataset for difficulty: {config.filter_difficulty}")
         train_dataset = train_dataset.filter(lambda x: x["difficulty"] == config.filter_difficulty)
+        # Update log path
+        config.log_path = os.path.join(config.log_path, f"difficulty_{config.filter_difficulty}")
+    
+    # Init wandb
+    try:
+        wandb_project = config.wandb_project
+        wandb.init(
+            project=wandb_project,
+            name=os.path.basename(config.log_path),
+            config=vars(config),
+        )
+        logger.info(f"Initialized wandb run: {wandb.run}")
+    except Exception as e:
+        logger.warning(f"Failed to initialize wandb: {e}")
     
     logger.info(f"Dataset loaded: {len(train_dataset)} examples")
 
@@ -317,6 +340,12 @@ def main(config: Config):
     logger.info("Saving final checkpoint...")
     training_client.save_state(path=os.path.join(config.log_path, "final_checkpoint"))
     logger.info("Training completed")
+    # Finish wandb run if it was started
+    try:
+        if getattr(wandb, "run", None) is not None:
+            wandb.finish()
+    except Exception as e:
+        logger.warning(f"wandb finish failed: {e}")
 
 
 if __name__ == "__main__":

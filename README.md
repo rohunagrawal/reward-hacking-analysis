@@ -4,6 +4,8 @@ Set up your favorite virtual environment and then:
 ```
 git clone git@github.com:rohunagrawal/reward-hacking-entropy.git
 cd reward-hacking-entropy
+conda create -n hack python==3.10
+conda activate hack
 pip install -r requirements.txt
 ```
 
