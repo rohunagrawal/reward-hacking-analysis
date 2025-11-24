@@ -188,14 +188,13 @@ def main(config: Config):
     )
 
     #  Main training loop
-    global_step = 0
+    step = 0
     for epoch in range(0, config.epochs):
         logger.info(f"Starting epoch {epoch + 1}/{config.epochs}")
         for batch_idx in range(0, n_train_batches):
             t_start = time.time()
-            step = global_step
             metrics: dict[str, float] = {
-                "progress/global_step": global_step,
+                "progress/step": step,
                 "progress/epoch": epoch,
                 "progress/batch": batch_idx,
                 "optim/lr": config.learning_rate,
@@ -206,7 +205,6 @@ def main(config: Config):
             if step % config.save_every == 0 and step > 0:
                 logger.info(f"Saving checkpoint at step {step}...")
                 training_client.save_state(path=os.path.join(config.log_path, f"checkpoint_{step:06d}"))
-
             # Get training batch
             batch_start = batch_idx * config.batch_size
             batch_end = min((batch_idx + 1) * config.batch_size, len(train_dataset))
@@ -323,46 +321,46 @@ def main(config: Config):
                 if all(advantage == 0.0 for advantage in advantages):
                     continue
 
-                    for tokens, logprob, advantage, ob_len in zip(
-                        group_tokens, group_logprobs, advantages, group_ob_lens
-                    ):
-                        input_tokens = tokens[:-1]
-                        input_tokens = [int(token) for token in input_tokens]
-                        target_tokens = tokens[1:]
-                        all_logprobs = [0.0] * ob_len + logprob
-                        all_advantages = [0.0] * ob_len + [advantage] * (len(input_tokens) - ob_len)
-                        
-                        datum = types.Datum(
-                            model_input=types.ModelInput.from_ints(tokens=input_tokens),
-                            loss_fn_inputs={
-                                "target_tokens": TensorData.from_torch(torch.tensor(target_tokens)),
-                                "logprobs": TensorData.from_torch(torch.tensor(all_logprobs)),
-                                "advantages": TensorData.from_torch(torch.tensor(all_advantages)),
-                            },
-                        )
-                        training_datums.append(datum)
-
-                # Training step
-                if training_datums:
-                    fwd_bwd_future = training_client.forward_backward(
-                        training_datums, loss_fn="importance_sampling"
+                for tokens, logprob, advantage, ob_len in zip(
+                    group_tokens, group_logprobs, advantages, group_ob_lens
+                ):
+                    input_tokens = tokens[:-1]
+                    input_tokens = [int(token) for token in input_tokens]
+                    target_tokens = tokens[1:]
+                    all_logprobs = [0.0] * ob_len + logprob
+                    all_advantages = [0.0] * ob_len + [advantage] * (len(input_tokens) - ob_len)
+                    
+                    datum = types.Datum(
+                        model_input=types.ModelInput.from_ints(tokens=input_tokens),
+                        loss_fn_inputs={
+                            "target_tokens": TensorData.from_torch(torch.tensor(target_tokens)),
+                            "logprobs": TensorData.from_torch(torch.tensor(all_logprobs)),
+                            "advantages": TensorData.from_torch(torch.tensor(all_advantages)),
+                        },
                     )
-                    optim_step_future = training_client.optim_step(adam_params)
-                    _fwd_bwd_result = fwd_bwd_future.result()
-                    _optim_result = optim_step_future.result()
-                else:
-                    logger.warning("No training datums generated for this batch (all zero advantage?)")
+                    training_datums.append(datum)
 
-                # Log metrics
-                metrics["time/total"] = time.time() - t_start
-                metrics["reward/mean"] = sum(batch_rewards) / len(batch_rewards) if batch_rewards else 0.0
-                metrics["reward/correctness_f"] = sum(batch_correctness) / len(batch_correctness) if batch_correctness else 0.0
-                metrics["reward/compilable_g"] = sum(batch_compilable) / len(batch_compilable) if batch_compilable else 0.0
-                metrics["policy/entropy"] = sum(batch_entropies) / len(batch_entropies) if batch_entropies else 0.0
-                
-                log_metrics(metrics, step=step, log_dir=config.log_path)
-                
-                global_step += 1
+            # Training step (after processing all problems in batch)
+            if training_datums:
+                fwd_bwd_future = training_client.forward_backward(
+                    training_datums, loss_fn="importance_sampling"
+                )
+                optim_step_future = training_client.optim_step(adam_params)
+                _fwd_bwd_result = fwd_bwd_future.result()
+                _optim_result = optim_step_future.result()
+            else:
+                logger.warning("No training datums generated for this batch (all zero advantage?)")
+
+            # Log metrics (once per batch)
+            metrics["time/total"] = time.time() - t_start
+            metrics["reward/mean"] = sum(batch_rewards) / len(batch_rewards) if batch_rewards else 0.0
+            metrics["reward/correctness_f"] = sum(batch_correctness) / len(batch_correctness) if batch_correctness else 0.0
+            metrics["reward/compilable_g"] = sum(batch_compilable) / len(batch_compilable) if batch_compilable else 0.0
+            metrics["policy/entropy"] = sum(batch_entropies) / len(batch_entropies) if batch_entropies else 0.0
+            
+            log_metrics(metrics, step=step, log_dir=config.log_path)
+            
+            step += 1
 
     # Save final checkpoint
     logger.info("Saving final checkpoint...")
