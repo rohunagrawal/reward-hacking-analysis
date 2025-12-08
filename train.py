@@ -34,7 +34,7 @@ logging.getLogger("httpx").setLevel(logging.WARN)
 class Config:
     base_url: str | None = None
     log_path: str = "outputs/rl-leetcode/llama-3.2-1b"
-    model_name: str = "meta-llama/Llama-3.2-1B"
+    model_name: str = "Qwen/Qwen3-4B-Instruct-2507"
     epochs: int = 5
     batch_size: int = 64
     group_size: int = 16
@@ -198,6 +198,15 @@ def main(config: Config):
         learning_rate=config.learning_rate, beta1=0.9, beta2=0.95, eps=1e-8
     )
 
+    # Save config
+    os.makedirs(config.log_path, exist_ok=True)
+    config_json_path = os.path.join(config.log_path, "config.json")
+    try:
+        with open(config_json_path, "w") as f:
+            json.dump(vars(config), f, indent=2)
+    except Exception as e:
+        logger.warning(f"Failed to save config to {config_json_path}: {e}")
+
     #  Main training loop
     step = 0
     for epoch in range(0, config.epochs):
@@ -308,8 +317,8 @@ def main(config: Config):
                     # Call LeetCode reward function
                     try:
                         res = leetcode_eval.process_code_result(res, g_type=config.g_type)
-                        f_score = res.get("correctness_reward", 0.0)
-                        g_score = res.get("is_compilable_reward", 0.0)
+                        f_score = res.get("f_score", 0.0)
+                        g_score = res.get("g_score", 0.0)
                     except Exception as e:
                         logger.error(f"Error processing code result: {e}")
                         f_score = 0.0
