@@ -48,6 +48,7 @@ class TrainingConfig:
     dataset_path: str = "data/leetcode"
     filter_by: str = "difficulty" # difficulty, init_rollout_entropy
     filter_difficulty: str | None = None # e.g., "Easy", "Medium", "Hard"
+    filter_entropy_bin: int | None = None  # e.g., 1, 2, 3 when using init_rollout_entropy
     max_train_samples: int | None = 600     # Based on split size of leetcode: Easy: 638 | Medium: 1397 | Hard: 606. Keep each bin to have the same sample size
     seed: int = 42
     g_type: str = "is_compilable"  # TODO type of g reward to use, may change to llm as a judge
@@ -141,10 +142,24 @@ def main(config: TrainingConfig):
     else:
         train_dataset = dataset
 
-    # Filter by difficulty if specified
+    # Filter dataset
     if config.filter_by == "difficulty":
-        train_dataset = train_dataset.filter(lambda x: x["difficulty"] == config.filter_difficulty)
-        logger.info(f"Filtering dataset for difficulty: {config.filter_difficulty} -> {len(train_dataset)} samples")
+        if config.filter_difficulty is None:
+            logger.info("filter_by=difficulty but no filter_difficulty provided; using full dataset")
+        else:
+            train_dataset = train_dataset.filter(lambda x: x["difficulty"] == config.filter_difficulty)
+            logger.info(f"Filtering dataset for difficulty: {config.filter_difficulty} -> {len(train_dataset)} samples")
+    elif config.filter_by == "init_rollout_entropy":
+        if "entropy_bin" not in train_dataset.column_names:
+            logger.error("Dataset missing 'entropy_bin'. Ensure you are using the entropy-prepared dataset.")
+            return
+        if config.filter_entropy_bin is None:
+            logger.info("filter_by=init_rollout_entropy but no filter_entropy_bin provided; using full dataset")
+        else:
+            train_dataset = train_dataset.filter(lambda x: x["entropy_bin"] == config.filter_entropy_bin)
+            logger.info(f"Filtering dataset for entropy_bin={config.filter_entropy_bin} -> {len(train_dataset)} samples")
+    else:
+        logger.warning(f"Unknown filter_by value '{config.filter_by}', proceeding without filtering.")
 
     # Limit training samples if specified
     if config.max_train_samples is not None and len(train_dataset) > config.max_train_samples:
