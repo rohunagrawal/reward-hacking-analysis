@@ -33,12 +33,12 @@ logging.getLogger("httpx").setLevel(logging.WARN)
 @chz.chz
 class TrainingConfig:
     base_url: str | None = None
-    log_path: str = "outputs/rl-leetcode/llama-3.2-1b"
-    model_name: str = "Qwen/Qwen3-4B-Instruct-2507"
-    reward_type: str | None = None     # g, f_g, 100f_g
+    log_path: str = "outputs/rl-leetcode/llama-3.2-3b"
+    model_name: str = "meta-llama/Llama-3.2-3B"
+    reward_type: str | None = "g"     # options: g, f_g, 100f_g
     epochs: int = 5
     batch_size: int = 64
-    group_size: int = 16
+    group_size: int = 8
     learning_rate: float = 1e-5
     max_length: int = 4096
     lora_rank: int = 16
@@ -51,7 +51,11 @@ class TrainingConfig:
     filter_entropy_bin: int | None = None  # e.g., 1, 2, 3 when using init_rollout_entropy
     max_train_samples: int | None = 600     # Based on split size of leetcode: Easy: 638 | Medium: 1397 | Hard: 606. Keep each bin to have the same sample size
     seed: int = 42
-    g_type: str = "is_compilable"  # TODO type of g reward to use, may change to llm as a judge
+    g_type: str = "llm_judge"  # use LLM-as-judge by default; change to "is_compilable" for syntax-only
+    g_judge_model_name: str | None = "meta-llama/Llama-3.2-3B"
+    g_judge_base_url: str | None = None
+    g_judge_temperature: float = 0.0
+    g_judge_max_tokens: int = 8
 
     use_wandb: bool = True
     wandb_entity: str | None = "lorena-yantianyi1020"
@@ -182,7 +186,13 @@ def main(config: TrainingConfig):
     logger.info(f"Dataset loaded: {len(train_dataset)} examples")
 
     # Initialize Reward Function
-    leetcode_eval = LeetCode(sandbox_fusion_url=config.sandbox_url)
+    leetcode_eval = LeetCode(
+        sandbox_fusion_url=config.sandbox_url,
+        g_judge_model_name=config.g_judge_model_name,
+        g_judge_base_url=config.g_judge_base_url,
+        g_judge_temperature=config.g_judge_temperature,
+        g_judge_max_tokens=config.g_judge_max_tokens,
+    )
 
     n_train_batches = len(train_dataset) // config.batch_size
     logger.info(f"Training for {config.epochs} epochs, {n_train_batches} batches per epoch")
@@ -341,9 +351,8 @@ def main(config: TrainingConfig):
                         f_score = 0.0
                         g_score = 0.0
 
-                    # Total reward (can be weighted combination, for now just g)
-                    # reward = f_score + 0.5 * g_score
-                    if config.reward_type == "g":
+                    # Total reward (default g-only; supports f_g / 100f_g for compatibility)
+                    if config.reward_type in (None, "g"):
                         reward = g_score
                     elif config.reward_type == "f_g":
                         reward = f_score + g_score
@@ -352,6 +361,11 @@ def main(config: TrainingConfig):
                     else:
                         raise ValueError(f"Unknown reward type: {config.reward_type}")
 
+                    if step == 0 and i < 2:
+                        logger.info(
+                            f"[debug reward] f_score={f_score}, g_score={g_score}, "
+                            f"reward={reward}, g_type={config.g_type}, reward_type={config.reward_type}"
+                        )
                     group_rewards.append(reward)
                     group_correctness.append(f_score)
                     group_compilable.append(g_score)

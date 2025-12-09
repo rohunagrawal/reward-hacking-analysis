@@ -36,9 +36,12 @@ python data/prep_dataset.py \
     ```
   - Pass in the url when creating the LeetCode() object below.
 - Create LeetCode() object: class defined in [leetcode.py](reward_function/leetcode.py)
-  - Entry function: ```process_code_result()```. Returns a dictionary with ```is_compilable_reward``` and ```correctness_reward``` 
-  - ```is_compilable(completion: str)```: only checking whether the code itself is compilable, not whether the whole code with imports and test cases is compilable. (may happen in sandbox fusion)
+  - Entry function: ```process_code_result()```. Returns a dictionary with ```g_score``` (compilability) and ```f_score``` (correctness).
+  - ```g_type``` options:
+    - ```is_compilable```: syntax-only check.
+    - ```llm_judge```: LLM-as-a-judge on compilability (default judge: ```meta-llama/Llama-3.2-3B```, override via config/CLI).
   - ```check_correctness()```: use SandBox Fusion. Fall back to prime_code if SandBox Fusion is not available.
+  - Training reward defaults to ```g_score``` only.
 
 # Run an RL training run
 Modify port number and task difficulty in [train.sh](train.sh)

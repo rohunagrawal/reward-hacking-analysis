@@ -21,4 +21,6 @@ python train.py \
     batch_size=$batch_size \
     group_size=$group_size \
     model_name=$model_name \
-    reward_type=$reward_type
+    reward_type=$reward_type \
+    g_type="llm_judge" \
+    g_judge_model_name="meta-llama/Llama-3.2-3B"

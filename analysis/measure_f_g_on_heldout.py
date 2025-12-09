@@ -84,8 +84,14 @@ def main(config: Config):
 
     n_train_batches = len(dataset) // config.eval_batch_size
 
-    # Initialize Reward Function
-    leetcode_eval = LeetCode(sandbox_fusion_url=config.sandbox_url)
+    # Initialize Reward Function (pass through judge settings if present)
+    leetcode_eval = LeetCode(
+        sandbox_fusion_url=config.sandbox_url,
+        g_judge_model_name=getattr(training_config, "g_judge_model_name", None),
+        g_judge_base_url=getattr(training_config, "g_judge_base_url", None),
+        g_judge_temperature=getattr(training_config, "g_judge_temperature", 0.0),
+        g_judge_max_tokens=getattr(training_config, "g_judge_max_tokens", 16),
+    )
 
     # Setup training client
     service_client = tinker.ServiceClient(base_url=training_config.base_url)

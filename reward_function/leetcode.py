@@ -1,11 +1,33 @@
 
-import re
 import ast
+import logging
+from typing import Optional
+
+import tinker
+from tinker import types
+from transformers import AutoTokenizer
+
+logger = logging.getLogger(__name__)
 
 # Reference: https://github.com/allenai/olmes/blob/main/oe_eval/tasks/oe_eval_tasks/deepseek_leetcode.py
 class LeetCode:
-    def __init__(self,  sandbox_fusion_url: str = None):
+    def __init__(
+        self,
+        sandbox_fusion_url: str = None,
+        g_judge_model_name: Optional[str] = None,
+        g_judge_base_url: Optional[str] = None,
+        g_judge_temperature: float = 0.0,
+        g_judge_max_tokens: int = 16,
+    ):
         self.sandbox_fusion_url = sandbox_fusion_url
+        self.g_judge_model_name = g_judge_model_name
+        self.g_judge_base_url = g_judge_base_url
+        self.g_judge_temperature = g_judge_temperature
+        self.g_judge_max_tokens = g_judge_max_tokens
+
+        self._judge_tokenizer = None
+        self._judge_sampling_client = None
+        self._judge_sampling_params = None
 
     def _markdown_code_extraction(self, completion: str) -> str:
         if "```python" in completion:
@@ -34,6 +56,67 @@ class LeetCode:
         except SyntaxError:
             return 0.0
         except Exception:
+            return 0.0
+
+    def _init_llm_judge(self):
+        """
+        Lazily create the LLM judge client/tokenizer when g_type == "llm_judge".
+        """
+        if self.g_judge_model_name is None:
+            raise ValueError("g_type='llm_judge' requires g_judge_model_name to be set.")
+
+        if self._judge_sampling_client is not None:
+            return
+
+        service_client = tinker.ServiceClient(base_url=self.g_judge_base_url)
+        self._judge_sampling_client = service_client.create_sampling_client(model_name=self.g_judge_model_name)
+        self._judge_sampling_params = types.SamplingParams(
+            max_tokens=self.g_judge_max_tokens,
+            temperature=self.g_judge_temperature,
+            stop=["<eos>", "<|eot_id|>", "</s>", "###", "Answer:"],
+        )
+        self._judge_tokenizer = AutoTokenizer.from_pretrained(self.g_judge_model_name)
+
+    def _llm_judge_score(self, code_solution: str) -> float:
+        """
+        Ask an LLM to judge whether the code is likely to compile/run.
+        Returns 1.0 if the model responds with a leading '1'/'yes', else 0.0.
+        """
+        try:
+            self._init_llm_judge()
+        except Exception as e:
+            logger.error(f"Failed to initialize LLM judge: {e}")
+            return 0.0
+
+        prompt = (
+            "You are a strict Python code judge. "
+            "Reply with '1' if the code will compile and run without syntax errors "
+            "and is a plausible implementation of the intended function. "
+            "Reply with '0' if it is likely to fail or is incomplete. "
+            "Only output a single digit 1 or 0.\n\n"
+            f"Code:\n{code_solution}\n\nAnswer:"
+        )
+
+        input_ids = self._judge_tokenizer.encode(prompt, add_special_tokens=False)
+        model_input = types.ModelInput.from_ints(tokens=input_ids)
+
+        try:
+            future = self._judge_sampling_client.sample(
+                prompt=model_input,
+                num_samples=1,
+                sampling_params=self._judge_sampling_params,
+            )
+            sample_result = future.result()
+            sampled_tokens = sample_result.sequences[0].tokens
+            text = self._judge_tokenizer.decode(sampled_tokens, skip_special_tokens=True).strip().lower()
+            if text.startswith("1") or text.startswith("yes"):
+                return 1.0
+            if text.startswith("0") or text.startswith("no"):
+                return 0.0
+            # Fallback: check for digits anywhere
+            return 1.0 if "1" in text and "0" not in text else 0.0
+        except Exception as e:
+            logger.error(f"LLM judge scoring failed: {e}")
             return 0.0
 
     # Reference: https://github.com/volcengine/verl/blob/main/verl/utils/reward_score/__init__.py#L74
@@ -81,6 +164,8 @@ class LeetCode:
         else:
             if g_type == "is_compilable":
                 res["g_score"] = self.is_compilable(code_solution)
+            elif g_type == "llm_judge":
+                res["g_score"] = self._llm_judge_score(code_solution)
             else:
                 # TODO: may change to llm as a judge or other weak reward models
                 raise ValueError(f"Unsupported g_type: {g_type}")
