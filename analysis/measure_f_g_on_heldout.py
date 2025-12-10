@@ -29,10 +29,11 @@ logging.getLogger("httpx").setLevel(logging.WARN)
 @chz.chz
 class Config:
     dataset_path: str = "data/leetcode"  # Contains held-out dev set; should be prepared with prep_dataset.py
+    split_name: str = "train"
     training_output_dir: str = "outputs/rl-leetcode/llama-3.2-1b/Easy"  # where config, checkpoint_names.txt and latest_checkpoint.txt are stored
     sandbox_url: str = "http://localhost:8000/run_code"
     eval_batch_size: int = 16
-    eval_ckpt_num: int = 10
+    # eval_ckpt_num: int = 10
     do_baseline: bool = True
     baseline_result_fn: str = ""  # If do_baseline is False, provide path to baseline results to compare against
 
@@ -79,7 +80,8 @@ def main(config: Config):
         return
 
     if isinstance(dataset, datasets.DatasetDict):
-        dataset = dataset["dev"]
+        # dataset = dataset["dev"]
+        dataset = dataset[config.split_name]
     else:
         dataset = dataset
 
@@ -87,6 +89,10 @@ def main(config: Config):
     if training_config.filter_by == "difficulty":
         logger.info(f"Filtering dataset for difficulty: {training_config.filter_difficulty}")
         dataset = dataset.filter(lambda x: x["difficulty"] == training_config.filter_difficulty)
+
+    if config.split_name == "train":
+        # Get the first 100 examples
+        dataset = dataset.select(range(min(100, len(dataset))))
 
     n_train_batches = len(dataset) // config.eval_batch_size
 
@@ -107,9 +113,9 @@ def main(config: Config):
     with open(os.path.join(config.training_output_dir, "checkpoint_names.txt"), "r") as f:
         ckpt_paths += [line.strip() for line in f.readlines() if line.strip()]
     # Given eval_ckpt_num, sample evenly from ckpt_paths
-    if config.eval_ckpt_num < len(ckpt_paths):
-        step_size = int(len(ckpt_paths) / config.eval_ckpt_num)
-        ckpt_paths = [ckpt_paths[int(i * step_size)] for i in range(config.eval_ckpt_num)]
+    # if config.eval_ckpt_num < len(ckpt_paths):
+    #     step_size = int(len(ckpt_paths) / config.eval_ckpt_num)
+    #     ckpt_paths = [ckpt_paths[int(i * step_size)] for i in range(config.eval_ckpt_num)]
     if config.do_baseline:
         ckpt_paths = ["baseline"] + ckpt_paths
 
