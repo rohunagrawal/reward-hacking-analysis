@@ -15,10 +15,11 @@ python train.py \
     filter_entropy_bin=$entropy_bin \
     dataset_path=$dataset_path \
     sandbox_url="http://localhost:$YOUR_PORT_NUMBER/run_code" \
-    log_path="outputs/rl-leetcode-entropy/$model_name/bin_$entropy_bin/$reward_type" \
+    log_path="outputs/rl-leetcode/$model_name/$reward_type/$entropy_bin" \
     epochs=5 \
     max_train_samples=$max_train_samples \
     batch_size=$batch_size \
     group_size=$group_size \
     model_name=$model_name \
-    reward_type=$reward_type
+    reward_type=$reward_type \
+    g_type="is_compilable"
