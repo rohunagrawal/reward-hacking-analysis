@@ -15,7 +15,7 @@ python train.py \
     filter_entropy_bin=$entropy_bin \
     dataset_path=$dataset_path \
     sandbox_url="http://localhost:$YOUR_PORT_NUMBER/run_code" \
-    log_path="outputs/rl-leetcode/$model_name/$reward_type/$entropy_bin" \
+    log_path="outputs/rl-leetcode/$model_name/$reward_type/entropy_bin_$entropy_bin" \
     epochs=5 \
     max_train_samples=$max_train_samples \
     batch_size=$batch_size \
