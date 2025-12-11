@@ -37,7 +37,7 @@ class Config:
     temperature: float = 1.0
     samples_per_problem: int = 1
     bin_num: int = 3
-    n_threads: int = 10
+    n_threads: int = 15
 
 
 def set_seed(seed: int):
