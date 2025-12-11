@@ -251,30 +251,103 @@ def main(config: Config):
     with open(output_metrics_path, "w") as f:
         json.dump(ckpt_to_avg_f_g_vals, f, indent=4)
 
+    if training_config.filter_by == "difficulty":
+        bin_name = f" ({training_config.filter_difficulty})"
+    else:
+        # TODO bin name for entropy rollout run
+        bin_name = ""
+
+    if training_config.g_type == "llm_judge":
+        bin_name += " w/ reward=g (g=LLM Judge)"
+    else:
+        if training_config.reward_type == "f_g":
+            reward_name = "f+g"
+        elif training_config.reward_type == "100f_g":
+            reward_name = "100*f+g"
+        else:
+            reward_name = training_config.reward_type
+        bin_name += f" w/ reward={reward_name} (g=Compilability)"
+
     # Plot scores across checkpoints
     plot_scores_across_checkpoints(
         scores=ckpt_to_avg_f_g_vals,
         output_fn=os.path.join(config.training_output_dir, "heldout_g_minus_f_scores.png"),
         y_label="Avg g - f Score",
-        title="Held-out Avg g - f Scores Across Checkpoints",
+        title=f"Avg g - f Scores on Dev Set: {training_config.model_name}{bin_name}",
         score_name="avg_g_minus_f"
+    )
+    # Plot scores across checkpoints
+    plot_scores_across_checkpoints(
+        scores=ckpt_to_avg_f_g_vals,
+        output_fn=os.path.join(config.training_output_dir, "heldout_f_scores.png"),
+        y_label="Avg f Score",
+        title=f"Avg f Scores on Dev Set: {training_config.model_name}{bin_name}",
+        score_name="avg_f"
+    )
+    # Plot scores across checkpoints
+    plot_scores_across_checkpoints(
+        scores=ckpt_to_avg_f_g_vals,
+        output_fn=os.path.join(config.training_output_dir, "heldout_g_scores.png"),
+        y_label="Avg g Score",
+        title=f"Avg g Scores on Dev Set: {training_config.model_name}{bin_name}",
+        score_name="avg_g"
     )
 
 
 def plot_scores(config: Config):
+    with open(os.path.join(config.training_output_dir, "config.json"), "r") as f:
+        # Remove keys that start with "X_" and "wandb_run_name" (init_property)
+        config_dict = json.load(f)
+        config_dict = {k: v for k, v in config_dict.items() if not k.startswith("X_") and k != "wandb_run_name"}
+        training_config = TrainingConfig(**config_dict)
+
     avg_heldout_f_g_scores_json_fn = os.path.join(config.training_output_dir, "avg_heldout_f_g_scores.json")
     # read in scores
     with open(avg_heldout_f_g_scores_json_fn, "r") as f:
         ckpt_to_avg_f_g_vals = json.load(f)
-    output_dir = os.path.dirname(avg_heldout_f_g_scores_json_fn)
+
+    if training_config.filter_by == "difficulty":
+        bin_name = f" ({training_config.filter_difficulty})"
+    else:
+        # TODO bin name for entropy rollout run
+        bin_name = ""
+
+    if training_config.g_type == "llm_judge":
+        bin_name += " w/ reward=g (g=LLM Judge)"
+    else:
+        if training_config.reward_type == "f_g":
+            reward_name = "f+g"
+        elif training_config.reward_type == "100f_g":
+            reward_name = "100*f+g"
+        else:
+            reward_name = training_config.reward_type
+        bin_name += f" w/ reward={reward_name} (g=Compilability)"
+
+    # Plot scores across checkpoints
     plot_scores_across_checkpoints(
         scores=ckpt_to_avg_f_g_vals,
-        output_fn=os.path.join(output_dir, "heldout_g_minus_f_scores.png"),
+        output_fn=os.path.join(config.training_output_dir, "heldout_g_minus_f_scores.png"),
         y_label="Avg g - f Score",
-        title="Held-out Avg g - f Scores Across Checkpoints",
+        title=f"Avg g - f Scores on Dev Set: {training_config.model_name}{bin_name}",
         score_name="avg_g_minus_f"
+    )
+    # Plot scores across checkpoints
+    plot_scores_across_checkpoints(
+        scores=ckpt_to_avg_f_g_vals,
+        output_fn=os.path.join(config.training_output_dir, "heldout_f_scores.png"),
+        y_label="Avg f Score",
+        title=f"Avg f Scores on Dev Set: {training_config.model_name}{bin_name}",
+        score_name="avg_f"
+    )
+    # Plot scores across checkpoints
+    plot_scores_across_checkpoints(
+        scores=ckpt_to_avg_f_g_vals,
+        output_fn=os.path.join(config.training_output_dir, "heldout_g_scores.png"),
+        y_label="Avg g Score",
+        title=f"Avg g Scores on Dev Set: {training_config.model_name}{bin_name}",
+        score_name="avg_g"
     )
 
 if __name__ == "__main__":
-    # chz.nested_entrypoint(main)
-    chz.nested_entrypoint(plot_scores)
+    chz.nested_entrypoint(main)
+    # chz.nested_entrypoint(plot_scores)
