@@ -1,0 +1,3 @@
+tinker://f787807a-b904-5808-b02c-67011d649c44:train:0/weights/outputs_rl-leetcode_llama-3.2-3b_Medium-g_checkpoint_000001
+tinker://04997f8c-1f55-5bda-b5a5-94b6445e2356:train:0/weights/outputs_rl-leetcode_llama-3.2-3b_Medium-g_checkpoint_000001
+tinker://04997f8c-1f55-5bda-b5a5-94b6445e2356:train:0/weights/outputs_rl-leetcode_llama-3.2-3b_Medium-g_checkpoint_000002

@@ -1,0 +1,1 @@
+{"progress/epoch": 0, "progress/step": 0, "optim/lr": 1e-05, "progress/done_frac": 0.022222222222222223, "time/total": 4849.58877491951, "reward/mean": 0.0, "reward/correctness_f": 0.0, "reward/compilable_g": 0.0, "reward/f_minus_g": 0.0, "policy/entropy": 2.9327082004180633, "step": 0, "timestamp": 1765255493.104479}

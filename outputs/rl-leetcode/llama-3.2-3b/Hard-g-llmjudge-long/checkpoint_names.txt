@@ -1,0 +1,10 @@
+tinker://1f24fae7-a9e3-51b5-b02f-93316711ef03:train:0/weights/outputs_rl-leetcode_llama-3.2-3b_Hard-g-llmjudge-long_checkpoint_000005
+tinker://1f24fae7-a9e3-51b5-b02f-93316711ef03:train:0/weights/outputs_rl-leetcode_llama-3.2-3b_Hard-g-llmjudge-long_checkpoint_000010
+tinker://1f24fae7-a9e3-51b5-b02f-93316711ef03:train:0/weights/outputs_rl-leetcode_llama-3.2-3b_Hard-g-llmjudge-long_checkpoint_000015
+tinker://1f24fae7-a9e3-51b5-b02f-93316711ef03:train:0/weights/outputs_rl-leetcode_llama-3.2-3b_Hard-g-llmjudge-long_checkpoint_000020
+tinker://1f24fae7-a9e3-51b5-b02f-93316711ef03:train:0/weights/outputs_rl-leetcode_llama-3.2-3b_Hard-g-llmjudge-long_checkpoint_000025
+tinker://1f24fae7-a9e3-51b5-b02f-93316711ef03:train:0/weights/outputs_rl-leetcode_llama-3.2-3b_Hard-g-llmjudge-long_checkpoint_000030
+tinker://1f24fae7-a9e3-51b5-b02f-93316711ef03:train:0/weights/outputs_rl-leetcode_llama-3.2-3b_Hard-g-llmjudge-long_checkpoint_000035
+tinker://1f24fae7-a9e3-51b5-b02f-93316711ef03:train:0/weights/outputs_rl-leetcode_llama-3.2-3b_Hard-g-llmjudge-long_checkpoint_000040
+tinker://1f24fae7-a9e3-51b5-b02f-93316711ef03:train:0/weights/outputs_rl-leetcode_llama-3.2-3b_Hard-g-llmjudge-long_checkpoint_000045
+tinker://1f24fae7-a9e3-51b5-b02f-93316711ef03:train:0/weights/outputs_rl-leetcode_llama-3.2-3b_Hard-g-llmjudge-long_final

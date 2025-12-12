@@ -1,0 +1,47 @@
+2025-12-09 18:57:34,880 [INFO] Starting training with config: TrainingConfig(base_url=None, log_path='outputs/rl-leetcode/llama-3.2-3b/Medium-g', model_name='meta-llama/Llama-3.2-3B', reward_type='g', epochs=5, batch_size=64, group_size=8, learning_rate=1e-05, max_length=4096, lora_rank=16, save_every=1, max_tokens=1024, sandbox_url='http://localhost:8001/run_code', dataset_path='data/leetcode', filter_by='difficulty', filter_difficulty='Medium', filter_entropy_bin=None, max_train_samples=600, seed=42, g_type='llm_judge', g_judge_model_name='meta-llama/Llama-3.2-3B', g_judge_model_path=None, g_judge_base_url=None, g_judge_temperature=0.0, g_judge_max_tokens=8, use_wandb=True, wandb_entity='lorena-yantianyi1020', wandb_project='COMS4705-reward-hacking-entropy')
+2025-12-09 18:57:34,882 [INFO] Loading tokenizer for meta-llama/Llama-3.2-3B...
+2025-12-09 18:57:35,560 [INFO] Loading dataset from data/leetcode...
+Filter:   0%|          | 0/2641 [00:00<?, ? examples/s]Filter:  38%|███▊      | 1000/2641 [00:01<00:02, 819.23 examples/s]Filter:  76%|███████▌  | 2000/2641 [00:01<00:00, 1220.48 examples/s]Filter: 100%|██████████| 2641/2641 [00:02<00:00, 1378.33 examples/s]Filter: 100%|██████████| 2641/2641 [00:02<00:00, 1247.26 examples/s]
+2025-12-09 18:57:37,781 [INFO] Filtering dataset for difficulty: Medium -> 1397 samples
+2025-12-09 18:57:37,782 [INFO] Limiting training dataset from 1397 to 600 samples
+2025-12-09 18:57:37,785 [WARNING] Failed to initialize wandb: module 'wandb' has no attribute 'init'
+2025-12-09 18:57:37,785 [INFO] Dataset loaded: 600 examples
+2025-12-09 18:57:37,785 [INFO] Training for 5 epochs, 9 batches per epoch
+Traceback (most recent call last):
+  File "/Users/saifpunjwani/Library/CloudStorage/OneDrive-Personal/Desktop/Columbia/Semesters/Fall 2025/COMSW4705 - Natural Language Processing/Project/reward-hacking-entropy/train.py", line 446, in <module>
+    chz.nested_entrypoint(main)
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/chz/blueprint/_entrypoint.py", line 39, in inner
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/chz/blueprint/_entrypoint.py", line 106, in nested_entrypoint
+    return main(value)
+           ^^^^^^^^^^^
+  File "/Users/saifpunjwani/Library/CloudStorage/OneDrive-Personal/Desktop/Columbia/Semesters/Fall 2025/COMSW4705 - Natural Language Processing/Project/reward-hacking-entropy/train.py", line 203, in main
+    service_client = tinker.ServiceClient(base_url=config.base_url)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/tinker/lib/public_interfaces/service_client.py", line 55, in __init__
+    self.holder = InternalClientHolder(
+                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/tinker/lib/internal_client_holder.py", line 113, in __init__
+    ).result()
+      ^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/tinker/lib/public_interfaces/api_future.py", line 33, in result
+    return self._future.result(timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/concurrent/futures/_base.py", line 456, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/tinker/lib/internal_client_holder.py", line 173, in _create_session
+    with self.aclient(ClientConnectionPoolType.SESSION) as client:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/tinker/lib/internal_client_holder.py", line 57, in aclient
+    self._clients.append(AsyncTinker(**self._constructor_kwargs))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/tinker/_client.py", line 84, in __init__
+    raise TinkerError(
+tinker.TinkerError: The api_key client option must be set either by passing api_key to the client or by setting the TINKER_API_KEY environment variable

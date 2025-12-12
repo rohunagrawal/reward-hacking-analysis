@@ -1,0 +1,10 @@
+tinker://83c1182d-9793-5978-a501-0350e216ea51:train:0/weights/outputs_rl-leetcode-entropy_llama-3.2-3b_bin3-100f_g_checkpoint_000001
+tinker://83c1182d-9793-5978-a501-0350e216ea51:train:0/weights/outputs_rl-leetcode-entropy_llama-3.2-3b_bin3-100f_g_checkpoint_000002
+tinker://83c1182d-9793-5978-a501-0350e216ea51:train:0/weights/outputs_rl-leetcode-entropy_llama-3.2-3b_bin3-100f_g_checkpoint_000003
+tinker://83c1182d-9793-5978-a501-0350e216ea51:train:0/weights/outputs_rl-leetcode-entropy_llama-3.2-3b_bin3-100f_g_checkpoint_000004
+tinker://83c1182d-9793-5978-a501-0350e216ea51:train:0/weights/outputs_rl-leetcode-entropy_llama-3.2-3b_bin3-100f_g_checkpoint_000005
+tinker://83c1182d-9793-5978-a501-0350e216ea51:train:0/weights/outputs_rl-leetcode-entropy_llama-3.2-3b_bin3-100f_g_checkpoint_000006
+tinker://83c1182d-9793-5978-a501-0350e216ea51:train:0/weights/outputs_rl-leetcode-entropy_llama-3.2-3b_bin3-100f_g_checkpoint_000007
+tinker://83c1182d-9793-5978-a501-0350e216ea51:train:0/weights/outputs_rl-leetcode-entropy_llama-3.2-3b_bin3-100f_g_checkpoint_000008
+tinker://83c1182d-9793-5978-a501-0350e216ea51:train:0/weights/outputs_rl-leetcode-entropy_llama-3.2-3b_bin3-100f_g_checkpoint_000009
+tinker://83c1182d-9793-5978-a501-0350e216ea51:train:0/weights/outputs_rl-leetcode-entropy_llama-3.2-3b_bin3-100f_g_checkpoint_000010
